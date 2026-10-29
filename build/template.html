@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL 50 Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF0F2; --surface:#FFFFFF; --surface-2:#F5F7F8; --ink:#17202B; --muted:#5A6676; --line:#D5DBE2; --line-strong:#B4BEC9;
+  --side:#1B2530; --side-2:#232F3C; --side-ink:#CBD4DE; --side-muted:#7E8C9B; --side-active:#2E3C4B;
+  --accent:#08796F; --accent-ink:#FFFFFF; --accent-soft:#D9EFEC; --accent-line:#9ED3CC;
+  --keep:#FFF0A0; --keep-ink:#5E4C00; --drop-ink:#9B3A2B; --drop-bg:#FAEDEA;
+  --star:#C98A00; --star-soft:#FBF0D3;
+  --easy:#1D7F48; --medium:#A86A10; --hard:#B83227;
+  --g0:#E2EBFB; --g1:#E1F2E6; --g2:#FBE9DA; --g3:#EEE4F8; --g4:#DCF0F0; --g5:#F9E2EA;
+  --s0:#5B84D6; --s1:#4E9D69; --s2:#D08843; --s3:#9474C7; --s4:#3E9C9C; --s5:#C95F84;
+  --code-bg:#1B2530; --code-ink:#D5DDE6; --code-k:#86D3C9; --code-f:#EFC46B; --code-s:#B3D88A; --code-n:#F1A27A; --code-c:#7E8C9B; --code-i:#C9B2F0;
+  --radius-s:4px; --radius-m:8px;
+  --mono:'Recursive', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  --sans:'Recursive', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0F151C; --surface:#161F29; --surface-2:#1B2531; --ink:#E2E8EE; --muted:#93A0AF; --line:#27323E; --line-strong:#3A4755;
+  --side:#0A0F14; --side-2:#111820; --side-ink:#C3CDD8; --side-muted:#6F7D8C; --side-active:#1D2834;
+  --accent:#3DC3B8; --accent-ink:#06201D; --accent-soft:#12332F; --accent-line:#24605A;
+  --keep:rgba(255,214,0,.17); --keep-ink:#FFE27C; --drop-ink:#F0927E; --drop-bg:rgba(222,92,70,.09);
+  --star:#F2B630; --star-soft:rgba(242,182,48,.14);
+  --easy:#4CC383; --medium:#E3A641; --hard:#F0786C;
+  --g0:rgba(91,132,214,.17); --g1:rgba(78,157,105,.17); --g2:rgba(208,136,67,.17); --g3:rgba(148,116,199,.19); --g4:rgba(62,156,156,.18); --g5:rgba(201,95,132,.17);
+  --code-bg:#0A0F14; color-scheme: dark; }}
+:root[data-theme="dark"]{
+  --paper:#0F151C; --surface:#161F29; --surface-2:#1B2531; --ink:#E2E8EE; --muted:#93A0AF; --line:#27323E; --line-strong:#3A4755;
+  --side:#0A0F14; --side-2:#111820; --side-ink:#C3CDD8; --side-muted:#6F7D8C; --side-active:#1D2834;
+  --accent:#3DC3B8; --accent-ink:#06201D; --accent-soft:#12332F; --accent-line:#24605A;
+  --keep:rgba(255,214,0,.17); --keep-ink:#FFE27C; --drop-ink:#F0927E; --drop-bg:rgba(222,92,70,.09);
+  --star:#F2B630; --star-soft:rgba(242,182,48,.14);
+  --easy:#4CC383; --medium:#E3A641; --hard:#F0786C;
+  --g0:rgba(91,132,214,.17); --g1:rgba(78,157,105,.17); --g2:rgba(208,136,67,.17); --g3:rgba(148,116,199,.19); --g4:rgba(62,156,156,.18); --g5:rgba(201,95,132,.17);
+  --code-bg:#0A0F14; color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.6;
+  font-variation-settings:"MONO" 0, "CASL" 0; -webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+code,.mono,pre,.grid{font-family:var(--mono); font-variation-settings:"MONO" 1, "CASL" 0}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+button{font:inherit; color:inherit}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* layout */
+.app{display:grid; grid-template-columns:288px minmax(0,1fr); min-height:100vh}
+.side{position:sticky; top:0; height:100vh; overflow-y:auto; background:var(--side); color:var(--side-ink);
+  display:flex; flex-direction:column; scrollbar-width:thin; scrollbar-color:var(--side-active) transparent}
+.main{min-width:0}
+.page{max-width:980px; padding:36px 48px 96px}
+.topbar{display:none}
+.scrim{display:none}
+
+/* sidebar */
+.brand{padding:22px 20px 14px; text-decoration:none; color:inherit; display:block}
+.brand-name{font-size:1.35rem; font-weight:800; letter-spacing:-.01em; color:#fff; font-variation-settings:"MONO" 1,"CASL" 0}
+:root[data-theme="light"] .brand-name{color:#fff}
+.brand-sub{font-size:.82rem; color:var(--side-muted)}
+.meter{height:6px; background:var(--side-2); border-radius:3px; margin:12px 0 4px; overflow:hidden}
+.meter i{display:block; height:100%; background:var(--accent); border-radius:3px; transition:width .3s}
+.meter-label{font-size:.78rem; color:var(--side-muted)}
+.side-search{margin:4px 14px 10px; position:relative}
+.side-search input{width:100%; background:var(--side-2); border:1px solid transparent; color:var(--side-ink); border-radius:var(--radius-s);
+  padding:8px 34px 8px 10px; font:inherit; font-size:.88rem}
+.side-search input::placeholder{color:var(--side-muted)}
+.side-search input:focus{outline:none; border-color:var(--accent)}
+.side-search kbd{position:absolute; right:8px; top:8px; background:transparent; border-bottom-width:1px; font-family:var(--mono); font-size:.72rem; color:var(--side-muted);
+  border:1px solid var(--side-active); border-radius:3px; padding:0 5px}
+.side-nav{padding:0 8px 8px; display:flex; flex-direction:column; gap:1px}
+.side-nav a{display:flex; justify-content:space-between; align-items:center; padding:7px 12px; border-radius:var(--radius-s);
+  color:var(--side-ink); text-decoration:none; font-size:.93rem; font-weight:560}
+.side-nav a:hover{background:var(--side-2)}
+.side-nav a.active{background:var(--side-active); color:#fff}
+.count{font-family:var(--mono); font-size:.75rem; background:var(--side-2); border-radius:10px; padding:0 7px; color:var(--side-ink)}
+.count.star{color:var(--star)}
+.tree{padding:6px 8px 16px; border-top:1px solid var(--side-2); flex:1}
+.tree details{margin-top:6px}
+.tree summary{list-style:none; cursor:pointer; padding:6px 12px; font-size:.8rem; color:var(--side-muted); display:flex; justify-content:space-between; gap:8px; border-radius:var(--radius-s)}
+.tree summary::-webkit-details-marker{display:none}
+.tree summary:hover{color:var(--side-ink)}
+.tree summary .sec-n{font-family:var(--mono)}
+.tree a{display:grid; grid-template-columns:12px 22px 1fr auto; align-items:center; gap:6px; padding:4px 10px; border-radius:var(--radius-s);
+  color:var(--side-ink); text-decoration:none; font-size:.86rem; line-height:1.35}
+.tree a:hover{background:var(--side-2)}
+.tree a.active{background:var(--side-active); color:#fff}
+.tree a .t{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.tree a .n{font-family:var(--mono); font-size:.74rem; color:var(--side-muted)}
+.dot{width:9px; height:9px; border-radius:50%; border:1.5px solid var(--side-muted)}
+.dot.on{background:var(--accent); border-color:var(--accent)}
+.tree .st{color:var(--star); font-size:.8rem}
+.side-foot{padding:12px 14px 18px; border-top:1px solid var(--side-2); display:flex; flex-wrap:wrap; gap:6px}
+.side-foot button{background:transparent; border:1px solid var(--side-active); color:var(--side-ink); border-radius:var(--radius-s); padding:5px 9px; font-size:.78rem; cursor:pointer}
+.side-foot button:hover{background:var(--side-2)}
+.persist-warn{font-size:.75rem; color:#F0B35A; padding:0 14px 10px}
+
+/* type */
+h1{font-size:2.05rem; line-height:1.18; letter-spacing:-.015em; margin:6px 0 10px; font-weight:780}
+h2{font-size:1.28rem; line-height:1.3; margin:44px 0 12px; font-weight:720; letter-spacing:-.005em}
+h3{font-size:1.02rem; margin:0 0 6px; font-weight:700}
+p{margin:0 0 12px}
+.lede{color:var(--muted); max-width:68ch}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+p code, li code, td code, .note code, .lede code, .callout code, dd code{font-size:.88em; background:var(--surface-2); border:1px solid var(--line); border-radius:3px; padding:0 4px}
+
+/* chips & buttons */
+.chips{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+.chip{font-size:.78rem; border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:1px 9px; color:var(--muted); white-space:nowrap}
+.chip.mono{font-size:.74rem}
+.diff{font-weight:650; border-color:currentColor; background:transparent}
+.diff.Easy{color:var(--easy)} .diff.Medium{color:var(--medium)} .diff.Hard{color:var(--hard)}
+.btn{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line-strong); background:var(--surface); border-radius:var(--radius-s);
+  padding:7px 13px; font-size:.9rem; font-weight:580; cursor:pointer; text-decoration:none; color:var(--ink); line-height:1.2}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.on-solved{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent)}
+.btn.on-star{background:var(--star-soft); border-color:var(--star); color:var(--star)}
+.btn.ghost{border-color:transparent; background:transparent; padding:6px 8px}
+.btn.ghost:hover{background:var(--surface-2); border-color:var(--line)}
+.btn:disabled{opacity:.4; cursor:default}
+.btn .ico{font-size:1rem; line-height:1}
+.actions{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 4px}
+
+/* roadmap hero grid */
+.board{margin:24px 0 8px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:18px 20px}
+.board-row{display:grid; grid-template-columns:minmax(150px, 210px) 1fr auto; align-items:center; gap:14px; padding:5px 0}
+.board-row + .board-row{border-top:1px dashed var(--line)}
+.board-name{font-size:.88rem; font-weight:620; background:none; border:0; text-align:left; padding:0; cursor:pointer; color:var(--ink)}
+.board-name:hover{color:var(--accent)}
+.cells{display:flex; flex-wrap:wrap; gap:5px}
+.cell{width:34px; height:34px; display:grid; place-items:center; border-radius:var(--radius-s); border:1.5px solid var(--line-strong);
+  font-family:var(--mono); font-size:.78rem; color:var(--muted); text-decoration:none; position:relative; background:var(--surface)}
+.cell:hover{border-color:var(--ink); color:var(--ink)}
+.cell.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:700}
+.cell.rev::after{content:""; position:absolute; top:-1px; right:-1px; border-style:solid; border-width:0 10px 10px 0; border-color:transparent var(--star) transparent transparent; border-top-right-radius:3px}
+.board-count{font-family:var(--mono); font-size:.8rem; color:var(--muted); min-width:3.2em; text-align:right}
+.board-legend{display:flex; gap:16px; flex-wrap:wrap; font-size:.8rem; color:var(--muted); margin-top:12px; padding-top:10px; border-top:1px solid var(--line)}
+.board-legend span{display:inline-flex; gap:6px; align-items:center}
+.mini{width:13px; height:13px; border-radius:3px; border:1.5px solid var(--line-strong); display:inline-block; position:relative}
+.mini.on{background:var(--accent); border-color:var(--accent)}
+.mini.rev::after{content:""; position:absolute; top:-1px; right:-1px; border-style:solid; border-width:0 6px 6px 0; border-color:transparent var(--star) transparent transparent}
+.next-up{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:18px 0 0}
+
+.filters{display:flex; flex-wrap:wrap; gap:16px; margin:30px 0 4px; align-items:center}
+.seg{display:inline-flex; border:1px solid var(--line-strong); border-radius:var(--radius-s); overflow:hidden; background:var(--surface)}
+.seg button{border:0; background:transparent; padding:5px 11px; font-size:.84rem; cursor:pointer; color:var(--muted)}
+.seg button + button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--surface)}
+.seg-label{font-size:.84rem; color:var(--muted); margin-right:6px}
+
+.sec-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-top:40px; border-bottom:2px solid var(--ink); padding-bottom:6px}
+.sec-head h2{margin:0}
+.sec-head .muted{font-family:var(--mono); font-size:.85rem}
+.sec-blurb{margin:8px 0 6px; color:var(--muted); font-size:.92rem}
+table.list{width:100%; border-collapse:collapse}
+table.list td{padding:9px 8px; border-bottom:1px solid var(--line); vertical-align:middle}
+table.list tr:hover td{background:var(--surface)}
+table.list .num{font-family:var(--mono); font-size:.8rem; color:var(--muted); width:3.2em}
+table.list .lc{font-family:var(--mono); font-size:.76rem; color:var(--muted); width:5.4em; white-space:nowrap}
+table.list a.title{color:var(--ink); text-decoration:none; font-weight:580}
+table.list a.title:hover{color:var(--accent); text-decoration:underline}
+table.list .concepts{font-size:.78rem; color:var(--muted); margin-top:1px}
+.check{width:22px; height:22px; border-radius:5px; border:1.5px solid var(--line-strong); background:var(--surface); cursor:pointer; display:grid; place-items:center; padding:0; color:transparent; font-size:.85rem; line-height:1}
+.check.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.starbtn{background:none; border:0; cursor:pointer; font-size:1.05rem; color:var(--line-strong); padding:2px 4px; line-height:1}
+.starbtn.on{color:var(--star)}
+.empty-row td{color:var(--muted); font-size:.9rem; padding:14px 8px}
+
+/* problem page */
+.crumbs{display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:.86rem; color:var(--muted)}
+.crumbs a{color:var(--muted); text-decoration:none}
+.crumbs a:hover{color:var(--accent)}
+.pn{display:flex; gap:4px}
+.callout{border-left:4px solid var(--accent); background:var(--accent-soft); padding:10px 14px; border-radius:0 var(--radius-s) var(--radius-s) 0; margin:18px 0 0; font-size:.95rem}
+.callout b{font-weight:700}
+.task{font-size:1.04rem; max-width:72ch}
+.returns{font-size:.92rem; color:var(--muted)}
+.returns code{color:var(--ink)}
+.tables{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start}
+.tbl{min-width:0; max-width:100%}
+.tbl-name{font-family:var(--mono); font-size:.86rem; font-weight:700; margin:0 0 6px; display:flex; gap:8px; align-items:baseline}
+.tbl-name .muted{font-weight:400; font-size:.76rem}
+.schema{font-size:.76rem; color:var(--muted); margin:0 0 6px; font-family:var(--mono); line-height:1.5}
+.schema b{color:var(--ink); font-weight:600}
+.pk{color:var(--star)}
+.setup-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:center}
+details.plain > summary{cursor:pointer; color:var(--accent); font-size:.88rem; list-style:none}
+details.plain > summary::-webkit-details-marker{display:none}
+details.plain > summary::before{content:"▸ "; }
+details.plain[open] > summary::before{content:"▾ "}
+ol.think{padding-left:0; list-style:none; counter-reset:t; max-width:74ch; margin:0}
+ol.think li{counter-increment:t; position:relative; padding:4px 0 10px 40px}
+ol.think li::before{content:counter(t); position:absolute; left:0; top:3px; width:26px; height:26px; border-radius:50%; border:1.5px solid var(--ink);
+  display:grid; place-items:center; font-family:var(--mono); font-size:.8rem; font-weight:700}
+ul.notes{padding-left:1.1em; max-width:76ch; margin:0}
+ul.notes li{margin:0 0 8px}
+ul.traps li::marker{content:"✕  "; color:var(--drop-ink); font-weight:700}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:28px}
+.two h3{margin-bottom:10px}
+
+/* result grid */
+.grid-wrap{overflow-x:auto; width:fit-content; max-width:100%; border:1px solid var(--line-strong); border-radius:var(--radius-s); background:var(--surface)}
+table.grid{border-collapse:collapse; font-size:.82rem; line-height:1.35; width:auto}
+table.grid th{background:var(--surface-2); text-align:left; font-weight:650; padding:6px 12px; border-bottom:1.5px solid var(--line-strong); white-space:nowrap; color:var(--ink)}
+table.grid th + th, table.grid td + td{border-left:1px solid var(--line)}
+table.grid td{padding:5px 12px; border-bottom:1px solid var(--line); white-space:nowrap}
+table.grid tr:last-child td{border-bottom:0}
+table.grid td.num{text-align:right}
+table.grid th.comp{background:var(--accent-soft); color:var(--accent)}
+table.grid td.comp{background:color-mix(in srgb, var(--accent-soft) 45%, transparent)}
+.null{color:var(--muted); font-style:italic; font-variation-settings:"MONO" 1, "slnt" -10; opacity:.8}
+.empty{color:var(--muted); font-style:italic}
+table.grid tr.keep td{background:var(--keep); color:var(--keep-ink)}
+table.grid tr.keep td.comp{background:var(--keep)}
+table.grid tr.drop td{color:var(--drop-ink); background:var(--drop-bg); text-decoration:line-through; text-decoration-thickness:1px; opacity:.78}
+table.grid tr.drop td.comp{text-decoration:none}
+.has-grp:not(.has-keep) tr.g0 td{background:var(--g0)} .has-grp:not(.has-keep) tr.g1 td{background:var(--g1)}
+.has-grp:not(.has-keep) tr.g2 td{background:var(--g2)} .has-grp:not(.has-keep) tr.g3 td{background:var(--g3)}
+.has-grp:not(.has-keep) tr.g4 td{background:var(--g4)} .has-grp:not(.has-keep) tr.g5 td{background:var(--g5)}
+.has-grp tr td:first-child{box-shadow:inset 5px 0 0 var(--sx, transparent)}
+.has-grp tr.g0{--sx:var(--s0)} .has-grp tr.g1{--sx:var(--s1)} .has-grp tr.g2{--sx:var(--s2)} .has-grp tr.g3{--sx:var(--s3)} .has-grp tr.g4{--sx:var(--s4)} .has-grp tr.g5{--sx:var(--s5)}
+.has-grp tr.gstart td{border-top:2px solid var(--line-strong)}
+.has-grp tr td:first-child{padding-left:16px}
+.legend{display:flex; flex-wrap:wrap; gap:14px; font-size:.78rem; color:var(--muted); margin:10px 0 8px}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.sw{width:22px; height:12px; border-radius:2px; display:inline-block; border:1px solid var(--line-strong)}
+.sw.keep{background:var(--keep)} .sw.drop{background:var(--drop-bg); position:relative}
+.sw.drop::after{content:""; position:absolute; left:2px; right:2px; top:5px; border-top:1px solid var(--drop-ink)}
+.sw.grp{background:linear-gradient(90deg, var(--s0) 0 4px, var(--g0) 4px 50%, var(--s2) 50% calc(50% + 4px), var(--g2) calc(50% + 4px))}
+.sw.comp{background:var(--accent-soft); border-color:var(--accent-line)}
+
+/* stepper */
+.stepper{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:16px 18px 18px; margin-top:10px}
+.step-tabs{display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:12px; scrollbar-width:thin}
+.step-tab{flex:0 0 auto; border:1px solid var(--line); background:var(--surface-2); border-radius:20px; padding:4px 12px 4px 5px; font-size:.82rem; cursor:pointer; display:inline-flex; gap:7px; align-items:center; color:var(--muted); max-width:260px}
+.step-tab .sk{width:21px; height:21px; border-radius:50%; display:grid; place-items:center; background:var(--surface); border:1px solid var(--line-strong); font-family:var(--mono); font-size:.72rem; font-weight:700; color:var(--ink); flex:0 0 auto}
+.step-tab .lbl{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.step-tab[aria-current="step"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.step-tab[aria-current="step"] .sk{background:var(--surface); color:var(--ink)}
+.step-tab.result .sk{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.step-title{font-size:1.06rem; font-weight:700; margin:2px 0 4px}
+.step-note{font-size:.93rem; max-width:76ch; margin-bottom:6px}
+.step-foot{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap}
+.step-sql{margin-top:10px}
+
+/* code */
+.code{position:relative; background:var(--code-bg); border-radius:var(--radius-m); color:var(--code-ink); margin:8px 0 0}
+.code pre{margin:0; padding:16px 72px 16px 18px; overflow-x:auto; font-size:.86rem; line-height:1.6; tab-size:2}
+.code .copy{position:absolute; top:8px; right:8px; background:rgba(255,255,255,.08); color:var(--code-ink); border:1px solid rgba(255,255,255,.14); border-radius:var(--radius-s); padding:3px 9px; font-size:.75rem; cursor:pointer}
+.code .copy:hover{background:rgba(255,255,255,.16)}
+.code.small pre{font-size:.8rem; padding:12px 14px}
+.hk{color:var(--code-k); font-weight:600} .hf{color:var(--code-f)} .hs{color:var(--code-s)} .hn{color:var(--code-n)} .hc{color:var(--code-c); font-style:italic} .hi{color:var(--code-i)}
+.code .hk{font-variation-settings:"MONO" 1, "wght" 640}
+.pipeline{display:flex; flex-wrap:wrap; gap:0; margin:14px 0 0; align-items:stretch; font-size:.78rem}
+.pipe{padding:4px 10px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font-family:var(--mono); margin-right:-1px; opacity:.55}
+.pipe:first-child{border-radius:var(--radius-s) 0 0 var(--radius-s)}
+.pipe:last-child{border-radius:0 var(--radius-s) var(--radius-s) 0}
+.pipe.on{background:var(--ink); color:var(--surface); border-color:var(--ink); opacity:1; font-weight:650; position:relative; z-index:1}
+.pipe-cap{font-size:.8rem; color:var(--muted); margin-top:6px}
+.pipe-extra{display:inline-flex; gap:6px; margin-left:10px}
+details.alt{border:1px solid var(--line); border-radius:var(--radius-m); background:var(--surface); margin-top:10px}
+details.alt > summary{cursor:pointer; padding:10px 14px; font-weight:620; display:flex; justify-content:space-between; gap:10px; align-items:center; list-style:none}
+details.alt > summary::-webkit-details-marker{display:none}
+details.alt > summary::after{content:"+"; font-family:var(--mono); color:var(--muted); font-size:1.1rem}
+details.alt[open] > summary::after{content:"−"}
+details.alt .body{padding:0 14px 14px}
+.verified{font-size:.74rem; font-weight:500; color:var(--accent); margin-left:auto; padding-right:8px}
+textarea.mynotes{width:100%; min-height:130px; resize:vertical; border:1px solid var(--line-strong); border-radius:var(--radius-m); background:var(--surface); color:var(--ink); padding:12px 14px; font:inherit; font-size:.94rem; line-height:1.55}
+textarea.mynotes:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.saved{font-size:.78rem; color:var(--muted); min-height:1.2em; margin-top:4px}
+.pager{display:flex; justify-content:space-between; gap:12px; margin-top:56px; padding-top:18px; border-top:1px solid var(--line)}
+.pager a{text-decoration:none; color:var(--ink); max-width:46%}
+.pager a:hover .pt{color:var(--accent)}
+.pager .pl{font-size:.8rem; color:var(--muted)}
+.pager .pt{font-weight:620}
+.pager a.next{text-align:right; margin-left:auto}
+.kbd-hint{font-size:.78rem; color:var(--muted); margin-top:18px}
+kbd{font-family:var(--mono); font-size:.76em; border:1px solid var(--line-strong); border-bottom-width:2px; border-radius:3px; padding:0 4px; background:var(--surface)}
+
+/* revisit */
+.rv{border:1px solid var(--line); background:var(--surface); border-radius:var(--radius-m); padding:14px 16px; margin-top:10px; display:grid; grid-template-columns:1fr auto; gap:8px 16px}
+.rv-title{font-weight:650; text-decoration:none; color:var(--ink)}
+.rv-title:hover{color:var(--accent)}
+.rv-meta{font-size:.8rem; color:var(--muted)}
+.rv-note{grid-column:1 / -1; font-size:.88rem; background:var(--surface-2); border-radius:var(--radius-s); padding:8px 10px; white-space:pre-wrap; color:var(--ink)}
+.rv-actions{display:flex; gap:6px; align-items:flex-start; flex-wrap:wrap; justify-content:flex-end}
+.empty-state{border:1.5px dashed var(--line-strong); border-radius:var(--radius-m); padding:28px; color:var(--muted); margin-top:20px; max-width:620px}
+
+/* interview */
+.tabs{display:flex; gap:2px; border-bottom:2px solid var(--line); margin:22px 0 0; overflow-x:auto}
+.tabs a{padding:9px 14px; text-decoration:none; color:var(--muted); font-weight:600; font-size:.93rem; border-bottom:2px solid transparent; margin-bottom:-2px; white-space:nowrap}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current="page"]{color:var(--ink); border-bottom-color:var(--ink)}
+.pat{border-top:1px solid var(--line); padding:20px 0 6px; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.35fr); gap:22px}
+.pat:first-of-type{border-top:0}
+.pat h3{font-size:1.05rem}
+.pat .when{font-size:.9rem; color:var(--muted); margin-bottom:10px}
+.pat .chips a{text-decoration:none}
+.pat .chips a.chip:hover{border-color:var(--accent); color:var(--accent)}
+table.cheat{width:100%; border-collapse:collapse; font-size:.88rem; margin-top:8px}
+table.cheat th{text-align:left; font-weight:650; color:var(--muted); font-size:.8rem; border-bottom:1.5px solid var(--line-strong); padding:6px 8px}
+table.cheat td{border-bottom:1px solid var(--line); padding:7px 8px; vertical-align:top}
+table.cheat td:first-child{font-family:var(--mono); font-variation-settings:"MONO" 1; font-size:.82rem; font-weight:600; width:32%}
+table.cheat td:last-child{font-family:var(--mono); font-variation-settings:"MONO" 1; font-size:.78rem; color:var(--muted); width:36%}
+details.qa{border-bottom:1px solid var(--line)}
+details.qa > summary{cursor:pointer; padding:12px 0; font-weight:620; list-style:none; display:flex; gap:12px; justify-content:space-between}
+details.qa > summary::-webkit-details-marker{display:none}
+details.qa > summary::after{content:"+"; font-family:var(--mono); color:var(--muted)}
+details.qa[open] > summary::after{content:"−"}
+details.qa .ans{padding:0 0 14px; max-width:78ch; font-size:.95rem}
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:18px 0 6px}
+select.sel{font:inherit; font-size:.88rem; padding:6px 8px; border:1px solid var(--line-strong); border-radius:var(--radius-s); background:var(--surface); color:var(--ink)}
+.card{background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius-m); padding:22px 24px; margin-top:14px; min-height:260px}
+.card-top{display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; font-size:.84rem; color:var(--muted)}
+.card h3{font-size:1.32rem; margin:10px 0 8px}
+.reveal{margin-top:18px; padding-top:16px; border-top:1px dashed var(--line-strong)}
+.recall{font-family:var(--mono); font-variation-settings:"MONO" 1; font-size:.92rem; background:var(--keep); color:var(--keep-ink); padding:8px 12px; border-radius:var(--radius-s); display:inline-block; margin:6px 0 4px}
+.drill-nav{display:flex; justify-content:space-between; gap:8px; margin-top:16px; flex-wrap:wrap}
+ol.frame{list-style:none; padding:0; counter-reset:f; margin:0}
+ol.frame li{counter-increment:f; display:grid; grid-template-columns:44px 1fr; gap:6px; padding:12px 0; border-bottom:1px solid var(--line)}
+ol.frame li::before{content:counter(f); font-family:var(--mono); font-weight:800; font-size:1.3rem; color:var(--accent)}
+ol.frame b{display:block}
+.order{display:flex; flex-direction:column; gap:0; max-width:620px; margin-top:6px}
+.order div{display:grid; grid-template-columns:34px 170px 1fr; align-items:center; padding:7px 0; border-bottom:1px solid var(--line); font-size:.92rem}
+.order .on{font-family:var(--mono); font-weight:700}
+.order .ix{font-family:var(--mono); color:var(--muted); font-size:.8rem}
+
+/* toast */
+.toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--surface); padding:9px 16px; border-radius:var(--radius-s);
+  font-size:.88rem; opacity:0; pointer-events:none; transition:opacity .18s, transform .18s; z-index:100}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+@media (max-width: 960px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed; inset:0 auto 0 0; width:300px; z-index:60; transform:translateX(-100%); transition:transform .22s ease; visibility:hidden}
+  .side.open{transform:none; visibility:visible; box-shadow:0 0 40px rgba(0,0,0,.35)}
+  .scrim{position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:55; display:none}
+  .scrim.show{display:block}
+  .topbar{display:flex; position:sticky; top:0; z-index:40; align-items:center; gap:10px; background:var(--side); color:var(--side-ink); padding:10px 14px}
+  .topbar button{background:none; border:1px solid var(--side-active); color:var(--side-ink); border-radius:var(--radius-s); padding:4px 10px; cursor:pointer}
+  .topbar .tt{font-weight:700; font-size:.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .page{padding:22px 16px 80px}
+  h1{font-size:1.6rem}
+  .two, .pat{grid-template-columns:1fr; gap:10px}
+  .board{padding:14px}
+  .board-row{grid-template-columns:1fr auto; gap:6px 10px}
+  .board-row .cells{grid-column:1 / -1; order:3}
+  .cell{width:30px; height:30px}
+  table.list .lc, table.list .concepts{display:none}
+  .order div{grid-template-columns:28px 130px 1fr}
+  table.cheat td:last-child{display:none}
+  table.cheat td:first-child{width:45%}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important} }
+@media print{ .side,.topbar,.actions,.step-foot,.pager,.toast{display:none} .app{display:block} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Problems"></aside>
+  <div class="scrim" id="scrim" data-act="nav-close"></div>
+  <div class="main">
+    <div class="topbar"><button data-act="nav-open" aria-label="Open problem list">☰</button><span class="tt" id="tt">SQL 50</span></div>
+    <main class="page" id="page" tabindex="-1"></main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="importFile" accept="application/json,.json" class="sr-only" tabindex="-1">
+<script>
+const P = __PROBLEMS__;
+const R = __REVISION__;
+</script>
+<script>
+"use strict";
+const BY_ID = Object.fromEntries(P.map(p => [p.id, p]));
+const SECS = R.sections;
+const SEC = Object.fromEntries(SECS.map(s => [s.key, s]));
+const LC = slug => `https://leetcode.com/problems/${slug}/description/?envType=study-plan-v2&envId=top-sql-50`;
+
+/* ---------- storage ---------- */
+const KEY = 'sql50-notebook-v1';
+let persistOK = true;
+function blank(){ return {solved:{}, revisit:{}, notes:{}, theme:null}; }
+function loadStore(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    const s = raw ? JSON.parse(raw) : {};
+    return Object.assign(blank(), s);
+  }catch(e){ persistOK = false; return blank(); }
+}
+let S = loadStore();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ persistOK = false; } }
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+const fmtDate = ts => ts ? new Date(ts).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}) : '';
+const daysAgo = ts => { const d = Math.floor((Date.now() - ts) / 86400000); return d <= 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`; };
+let CLIP = [];
+const clip = t => { CLIP.push(t); return CLIP.length - 1; };
+let toastTimer;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1700); }
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); toast('Copied to clipboard'); }
+  catch(e){
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('Copied to clipboard'); }catch(_){ toast('Copy blocked — select the text and copy manually'); }
+    ta.remove();
+  }
+}
+
+/* ---------- SQL highlighting ---------- */
+const KW = new Set(('SELECT FROM WHERE AND OR NOT IN IS NULL AS ON JOIN LEFT RIGHT INNER OUTER CROSS FULL GROUP BY ORDER HAVING LIMIT OFFSET ' +
+  'DISTINCT UNION ALL CASE WHEN THEN ELSE END WITH OVER PARTITION ROWS RANGE BETWEEN PRECEDING FOLLOWING CURRENT ROW UNBOUNDED DESC ASC ' +
+  'INSERT INTO VALUES CREATE TABLE PRIMARY KEY DELETE UPDATE SET EXISTS LIKE REGEXP INTERVAL DAY MONTH YEAR WINDOW USING DIV MOD BINARY ' +
+  'COLLATE INT VARCHAR DATE DATETIME DECIMAL ENUM BIGINT TRUE FALSE RECURSIVE SIGNED').split(' '));
+const AMBIG = new Set('LEFT RIGHT IF MOD YEAR MONTH DAY DATE REPLACE INSERT BINARY'.split(' '));
+function hl(code){
+  const re = /(--[^\n]*)|('(?:[^'\\]|\\.)*')|(`[^`]*`)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][A-Za-z0-9_]*)|([\s\S])/g;
+  let out = '', m;
+  while((m = re.exec(code))){
+    if(m[1]) out += `<span class="hc">${esc(m[1])}</span>`;
+    else if(m[2]) out += `<span class="hs">${esc(m[2])}</span>`;
+    else if(m[3]) out += `<span class="hi">${esc(m[3])}</span>`;
+    else if(m[4]) out += `<span class="hn">${esc(m[4])}</span>`;
+    else if(m[5]){
+      const w = m[5], up = w.toUpperCase();
+      const call = /^\(/.test(code.slice(re.lastIndex));
+      if(call && (AMBIG.has(up) || !KW.has(up))) out += `<span class="hf">${esc(w)}</span>`;
+      else if(KW.has(up)) out += `<span class="hk">${esc(w)}</span>`;
+      else out += esc(w);
+    } else out += esc(m[6]);
+  }
+  return out;
+}
+function codeBlock(sql, cls=''){
+  return `<div class="code ${cls}"><button class="copy" data-act="copy" data-clip="${clip(sql)}">Copy</button><pre><code>${hl(sql)}</code></pre></div>`;
+}
+
+/* ---------- result grid ---------- */
+const isNum = v => typeof v === 'number' || (typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v));
+function grid(t){
+  const cols = t.cols, ki = cols.indexOf('_keep'), gi = cols.indexOf('_grp');
+  const vis = cols.map((c, i) => i).filter(i => i !== ki && i !== gi);
+  const gmap = new Map(); let prev;
+  const cls = ['grid', ki >= 0 ? 'has-keep' : '', gi >= 0 ? 'has-grp' : ''].join(' ');
+  let h = `<div class="grid-wrap"><table class="${cls}"><thead><tr>`;
+  for(const i of vis){ const c = cols[i], comp = c.startsWith('+'); h += `<th class="${comp ? 'comp' : ''}" scope="col">${esc(comp ? c.slice(1) : c)}</th>`; }
+  h += '</tr></thead><tbody>';
+  for(const r of t.rows){
+    const rc = [];
+    if(ki >= 0) rc.push(String(r[ki]) === '1' ? 'keep' : 'drop');
+    if(gi >= 0){ const g = String(r[gi]); if(!gmap.has(g)) gmap.set(g, gmap.size % 6); rc.push('g' + gmap.get(g)); if(prev !== undefined && g !== prev) rc.push('gstart'); prev = g; }
+    h += `<tr class="${rc.join(' ')}">` + vis.map(i => {
+      const v = r[i], comp = cols[i].startsWith('+');
+      return `<td class="${comp ? 'comp' : ''}${isNum(v) ? ' num' : ''}">${v === null ? '<span class="null">NULL</span>' : (v === '' ? '<span class="null">\'\'</span>' : esc(v))}</td>`;
+    }).join('') + '</tr>';
+  }
+  if(!t.rows.length) h += `<tr><td class="empty" colspan="${vis.length}">empty result — no rows</td></tr>`;
+  return h + '</tbody></table></div>';
+}
+function legend(t){
+  const c = t.cols, items = [];
+  if(c.includes('_keep')) items.push('<span><i class="sw keep"></i>row survives this step</span>', '<span><i class="sw drop"></i>row filtered out</span>');
+  if(c.includes('_grp')) items.push('<span><i class="sw grp"></i>colour = one group</span>');
+  if(c.some(x => x.startsWith('+'))) items.push('<span><i class="sw comp"></i>computed for this step</span>');
+  const boolCol = c.some((x, i) => x.startsWith('+') && t.rows.length && t.rows.every(r => r[i] === null || r[i] === 0 || r[i] === 1));
+  if(boolCol) items.push('<span>1 = TRUE, 0 = FALSE (MySQL booleans)</span>');
+  return items.length ? `<div class="legend">${items.join('')}</div>` : '';
+}
+
+/* ---------- clause pipeline ---------- */
+function stripCalls(s, name){
+  let out = '', i = 0; const re = new RegExp('\\b' + name + '\\s*\\(', 'g'); let m;
+  while((m = re.exec(s))){
+    out += s.slice(i, m.index + m[0].length); let d = 1, j = re.lastIndex;
+    while(j < s.length && d){ if(s[j] === '(') d++; else if(s[j] === ')') d--; j++; }
+    out += ')'; i = j; re.lastIndex = j;
+  }
+  return out + s.slice(i);
+}
+function clauses(sql){
+  let s = sql.replace(/'(?:[^'\\]|\\.)*'/g, "''").replace(/--[^\n]*/g, '').toUpperCase();
+  s = stripCalls(stripCalls(s, 'OVER'), 'GROUP_CONCAT');
+  const has = re => re.test(s);
+  const steps = [
+    ['FROM', has(/\bFROM\b/)], ['JOIN', has(/\bJOIN\b/)], ['WHERE', has(/\bWHERE\b/)], ['GROUP BY', has(/\bGROUP\s+BY\b/)],
+    ['HAVING', has(/\bHAVING\b/)], ['OVER()', /\bOVER\b/.test(sql.toUpperCase())], ['SELECT', has(/\bSELECT\b/)],
+    ['DISTINCT', has(/\bSELECT\s+DISTINCT\b/)], ['UNION', has(/\bUNION\b/)], ['ORDER BY', has(/\bORDER\s+BY\b/)], ['LIMIT', has(/\bLIMIT\b/)]
+  ];
+  const extra = [];
+  if(/^\s*WITH\b/.test(s)) extra.push('CTE');
+  const sub = s.replace(/(^|UNION(\s+ALL)?)\s*\(\s*SELECT\b/g, '$1 SELECT').replace(/\bAS\s*\(\s*SELECT\b/g, 'AS SELECT');
+  if(/\(\s*SELECT\b/.test(sub)) extra.push('subquery');
+  if(/^\s*DELETE\b/.test(s)) extra.push('DELETE');
+  return {steps, extra};
+}
+function pipeline(sql){
+  const {steps, extra} = clauses(sql);
+  return `<div class="pipeline" aria-label="Clauses used">${steps.map(([n, on]) => `<span class="pipe ${on ? 'on' : ''}">${n}</span>`).join('')}
+    ${extra.length ? `<span class="pipe-extra">${extra.map(e => `<span class="chip mono">${e}</span>`).join('')}</span>` : ''}</div>
+    <div class="pipe-cap">Highlighted clauses appear in this query, shown in the order MySQL logically evaluates them.</div>`;
+}
+
+/* ---------- sidebar ---------- */
+function solvedCount(list = P){ return list.filter(p => S.solved[p.id]).length; }
+function renderSide(){
+  const route = parseRoute();
+  const done = solvedCount(), revN = Object.keys(S.revisit).length;
+  const q = ($('#q') && $('#q').value) || '';
+  $('#side').innerHTML = `
+    <a class="brand" href="#/roadmap">
+      <div class="brand-name">SQL 50</div>
+      <div class="brand-sub">MySQL notebook for the LeetCode study plan</div>
+      <div class="meter" aria-hidden="true"><i style="width:${done * 2}%"></i></div>
+      <div class="meter-label">${done} of 50 solved</div>
+    </a>
+    <div class="side-search"><label class="sr-only" for="q">Filter problems</label>
+      <input id="q" type="search" placeholder="Filter by title, number, concept" value="${esc(q)}" autocomplete="off"><kbd>/</kbd></div>
+    <nav class="side-nav">
+      <a href="#/roadmap" class="${route.view === 'roadmap' ? 'active' : ''}">Roadmap</a>
+      <a href="#/revisit" class="${route.view === 'revisit' ? 'active' : ''}">Revisit list <span class="count star">${revN}</span></a>
+      <a href="#/interview" class="${route.view === 'interview' ? 'active' : ''}">Interview revision</a>
+    </nav>
+    <div class="tree">
+      ${SECS.map(s => {
+        const list = P.filter(p => p.sec === s.key);
+        const open = route.view !== 'problem' || BY_ID[route.id]?.sec === s.key || q;
+        return `<details ${open ? 'open' : ''} data-sec="${s.key}"><summary><span>${esc(s.name)}</span><span class="sec-n">${solvedCount(list)}/${list.length}</span></summary>
+          ${list.map(p => `<a href="#/p/${p.id}" data-search="${esc((p.n + ' ' + p.id + ' ' + p.title + ' ' + p.concepts.join(' ')).toLowerCase())}"
+            class="${route.view === 'problem' && route.id === p.id ? 'active' : ''}" title="${esc(p.title)}">
+            <i class="dot ${S.solved[p.id] ? 'on' : ''}"></i><span class="n">${p.n}</span><span class="t">${esc(p.title)}</span><span class="st">${S.revisit[p.id] ? '★' : ''}</span></a>`).join('')}
+        </details>`;
+      }).join('')}
+    </div>
+    ${persistOK ? '' : '<div class="persist-warn">This browser is blocking local storage, so progress lasts only until you close the tab. Use Export to keep it.</div>'}
+    <div class="side-foot">
+      <button data-act="theme">Theme: ${S.theme || 'auto'}</button>
+      <button data-act="export">Export progress</button>
+      <button data-act="import">Import</button>
+    </div>`;
+  applyFilter();
+  const act = $('#side a.active'); if(act && route.view === 'problem') act.scrollIntoView({block:'nearest'});
+}
+function applyFilter(){
+  const q = ($('#q')?.value || '').trim().toLowerCase();
+  document.querySelectorAll('.tree a').forEach(a => { a.style.display = !q || a.dataset.search.includes(q) ? '' : 'none'; });
+  document.querySelectorAll('.tree details').forEach(d => {
+    const any = [...d.querySelectorAll('a')].some(a => a.style.display !== 'none');
+    d.style.display = any ? '' : 'none'; if(q) d.open = true;
+  });
+}
+
+/* ---------- routing ---------- */
+function parseRoute(){
+  const h = location.hash.replace(/^#\/?/, '');
+  const [a, b, c] = h.split('/');
+  if(a === 'p' && BY_ID[+b]) return {view:'problem', id:+b};
+  if(a === 'revisit') return {view:'revisit'};
+  if(a === 'interview') return {view:'interview', tab:b || 'patterns', arg:c};
+  return {view:'roadmap'};
+}
+let lastView = '';
+function render(){
+  CLIP = [];
+  const r = parseRoute();
+  const key = r.view + (r.id || '') + (r.tab || '');
+  if(r.view === 'problem') renderProblem(r.id);
+  else if(r.view === 'revisit') renderRevisit();
+  else if(r.view === 'interview') renderInterview(r.tab, r.arg);
+  else renderRoadmap();
+  renderSide();
+  $('#tt').textContent = r.view === 'problem' ? `${BY_ID[r.id].n}. ${BY_ID[r.id].title}` : r.view === 'revisit' ? 'Revisit list' : r.view === 'interview' ? 'Interview revision' : 'SQL 50 roadmap';
+  document.title = (r.view === 'problem' ? BY_ID[r.id].title + ' – ' : '') + 'SQL 50 Notebook';
+  if(key !== lastView){ window.scrollTo(0, 0); lastView = key; }
+  closeNav();
+}
+
+/* ---------- roadmap ---------- */
+const RM = {diff:'all', status:'all'};
+function renderRoadmap(){
+  const done = solvedCount(), revN = Object.keys(S.revisit).length;
+  const next = P.find(p => !S.solved[p.id]);
+  const match = p => (RM.diff === 'all' || p.diff === RM.diff) &&
+    (RM.status === 'all' || (RM.status === 'todo' && !S.solved[p.id]) || (RM.status === 'done' && S.solved[p.id]) || (RM.status === 'revisit' && S.revisit[p.id]));
+  const seg = (name, opts) => `<span><span class="seg-label">${name}</span><span class="seg" role="group" aria-label="${name}">${opts.map(([v, l]) =>
+    `<button data-act="rm-filter" data-k="${name === 'Difficulty' ? 'diff' : 'status'}" data-v="${v}" aria-pressed="${RM[name === 'Difficulty' ? 'diff' : 'status'] === v}">${l}</button>`).join('')}</span></span>`;
+  $('#page').innerHTML = `
+    <h1>Roadmap</h1>
+    <p class="lede">Fifty problems in seven topics, in LeetCode's study-plan order. Each topic leans on the one before it, so work top to bottom. ${done} solved, ${revN} on your revisit list.</p>
+    <div class="board">
+      ${SECS.map(s => { const list = P.filter(p => p.sec === s.key); return `
+        <div class="board-row">
+          <button class="board-name" data-act="jump" data-target="sec-${s.key}">${esc(s.name)}</button>
+          <div class="cells">${list.map(p => `<a class="cell ${S.solved[p.id] ? 'on' : ''} ${S.revisit[p.id] ? 'rev' : ''}" href="#/p/${p.id}" title="${p.n}. ${esc(p.title)} (LC ${p.id}, ${p.diff})" aria-label="${p.n}. ${esc(p.title)}${S.solved[p.id] ? ', solved' : ''}">${p.n}</a>`).join('')}</div>
+          <span class="board-count">${solvedCount(list)}/${list.length}</span>
+        </div>`; }).join('')}
+      <div class="board-legend"><span><i class="mini"></i>not solved</span><span><i class="mini on"></i>solved</span><span><i class="mini rev"></i>on revisit list</span></div>
+    </div>
+    ${next ? `<div class="next-up"><a class="btn primary" href="#/p/${next.id}">Continue with ${next.n}. ${esc(next.title)}</a><span class="muted small">${esc(SEC[next.sec].name)}, ${next.diff}</span></div>`
+           : `<div class="next-up"><a class="btn primary" href="#/interview/drill">All 50 solved. Start the problem drill</a></div>`}
+    <div class="filters">
+      ${seg('Difficulty', [['all', 'All'], ['Easy', 'Easy'], ['Medium', 'Medium'], ['Hard', 'Hard']])}
+      ${seg('Show', [['all', 'All'], ['todo', 'Unsolved'], ['done', 'Solved'], ['revisit', 'Revisit']])}
+    </div>
+    ${SECS.map(s => { const all = P.filter(p => p.sec === s.key), list = all.filter(match); return `
+      <div class="sec-head" id="sec-${s.key}"><h2>${esc(s.name)}</h2><span class="muted">${solvedCount(all)}/${all.length}</span></div>
+      <p class="sec-blurb">${esc(s.blurb)}</p>
+      <table class="list"><tbody>
+      ${list.length ? list.map(p => `<tr>
+          <td style="width:34px"><button class="check ${S.solved[p.id] ? 'on' : ''}" data-act="solved" data-id="${p.id}" aria-pressed="${!!S.solved[p.id]}" aria-label="Mark ${esc(p.title)} solved">✓</button></td>
+          <td class="num">${p.n}</td>
+          <td><a class="title" href="#/p/${p.id}">${esc(p.title)}</a><div class="concepts">${esc(p.concepts.join(', '))}</div></td>
+          <td class="lc">LC ${p.id}</td>
+          <td style="width:84px"><span class="chip diff ${p.diff}">${p.diff}</span></td>
+          <td style="width:34px"><button class="starbtn ${S.revisit[p.id] ? 'on' : ''}" data-act="revisit" data-id="${p.id}" aria-pressed="${!!S.revisit[p.id]}" title="${S.revisit[p.id] ? 'Remove from' : 'Add to'} revisit list" aria-label="Revisit ${esc(p.title)}">★</button></td>
+        </tr>`).join('') : '<tr class="empty-row"><td>No problems in this topic match the filters.</td></tr>'}
+      </tbody></table>`; }).join('')}
+  `;
+}
+
+/* ---------- problem page ---------- */
+let stepIdx = 0, stepFor = null, showStepSql = false;
+function renderProblem(id){
+  const p = BY_ID[id];
+  if(stepFor !== id){ stepIdx = 0; stepFor = id; showStepSql = false; }
+  const i = P.indexOf(p), prev = P[i - 1], next = P[i + 1];
+  const solved = !!S.solved[id], rev = !!S.revisit[id];
+  const schemaHtml = p.inputs.map(t => {
+    const sc = p.schema.find(x => x.name === t.name);
+    return `<div class="tbl"><div class="tbl-name">${esc(t.name)} <span class="muted">${t.rows.length} rows</span></div>
+      <div class="schema">${sc.cols.map(([c, ty, k]) => `<b>${esc(c)}</b> ${esc(ty)}${k === 'PRI' ? ' <span class="pk" title="primary key">PK</span>' : ''}`).join('<br>')}</div>
+      ${grid(t)}</div>`;
+  }).join('');
+  $('#page').innerHTML = `
+    <div class="crumbs"><span><a href="#/roadmap">Roadmap</a> / <a href="#/roadmap" data-act="jump-after" data-target="sec-${p.sec}">${esc(SEC[p.sec].name)}</a></span>
+      <span class="pn">${prev ? `<a class="btn ghost" href="#/p/${prev.id}" title="Previous: ${esc(prev.title)}" aria-label="Previous problem">◀</a>` : ''}
+      <span class="muted mono small" style="align-self:center">${p.n} / 50</span>
+      ${next ? `<a class="btn ghost" href="#/p/${next.id}" title="Next: ${esc(next.title)}" aria-label="Next problem">▶</a>` : ''}</span></div>
+    <h1>${esc(p.title)}</h1>
+    <div class="chips"><span class="chip diff ${p.diff}">${p.diff}</span><span class="chip mono">LC ${p.id}</span>${p.concepts.map(c => `<span class="chip">${esc(c)}</span>`).join('')}</div>
+    <div class="actions">
+      <button class="btn ${solved ? 'on-solved' : ''}" data-act="solved" data-id="${id}" aria-pressed="${solved}"><span class="ico">${solved ? '✓' : '○'}</span>${solved ? 'Solved' : 'Mark solved'}</button>
+      <button class="btn ${rev ? 'on-star' : ''}" data-act="revisit" data-id="${id}" aria-pressed="${rev}"><span class="ico">★</span>${rev ? 'On revisit list' : 'Add to revisit'}</button>
+      <a class="btn" href="${LC(p.slug)}" target="_blank" rel="noopener">Open on LeetCode ↗</a>
+    </div>
+    <div class="callout"><b>Pattern:</b> ${md(p.pattern)}</div>
+
+    <h2>The task</h2>
+    <p class="task">${md(p.prompt)}</p>
+    <p class="returns">Return: <code>${esc(p.returns)}</code></p>
+
+    <h2>Tables and sample data</h2>
+    <p class="muted small">Sample rows are written for this notebook to expose the edge cases; LeetCode's own test data differs.</p>
+    <div class="tables">${schemaHtml}</div>
+    <div class="setup-row"><button class="btn" data-act="copy" data-clip="${clip(p.setup)}">Copy setup SQL</button>
+      <span class="muted small">Paste into a local MySQL 8 database to run every query on this page.</span></div>
+    <details class="plain" style="margin-top:8px"><summary>Show setup SQL</summary>${codeBlock(p.setup, 'small')}</details>
+
+    <h2>How to solve it</h2>
+    <ol class="think">${p.approach.map(a => `<li>${md(a)}</li>`).join('')}</ol>
+
+    <h2>Watch it run</h2>
+    <p class="muted small">Each step is a real intermediate query run on the sample data above.</p>
+    <div class="stepper" id="stepper"></div>
+
+    <h2>MySQL solution</h2>
+    ${codeBlock(p.solution)}
+    ${pipeline(p.solution)}
+    ${p.alts.length ? `<h3 style="margin-top:28px">Other ways to write it</h3>` + p.alts.map(a => `
+      <details class="alt"><summary><span>${esc(a.label)}</span>${a.verified ? '<span class="verified">same result on the sample data</span>' : ''}</summary>
+        <div class="body"><p class="small">${md(a.note)}</p>${codeBlock(a.sql, 'small')}</div></details>`).join('') : ''}
+
+    <h2>What to remember</h2>
+    <div class="two">
+      <div><h3>Key ideas</h3><ul class="notes">${p.remember.map(x => `<li>${md(x)}</li>`).join('')}</ul></div>
+      <div><h3>Traps</h3>${p.pitfalls.length ? `<ul class="notes traps">${p.pitfalls.map(x => `<li>${md(x)}</li>`).join('')}</ul>` : '<p class="muted small">No special traps beyond the key ideas.</p>'}</div>
+    </div>
+    <p style="margin-top:18px"><span class="muted small">One-line recall for interviews:</span><br><span class="recall">${md(p.recall)}</span></p>
+
+    <h2>My notes</h2>
+    <label class="sr-only" for="notes">My notes for this problem</label>
+    <textarea class="mynotes" id="notes" data-id="${id}" placeholder="Your own approach, the mistake you made, a variation to try…">${esc(S.notes[id] || '')}</textarea>
+    <div class="saved" id="saved">${S.notes[id] ? 'Saved in this browser' : ''}</div>
+
+    <div class="pager">
+      ${prev ? `<a href="#/p/${prev.id}"><div class="pl">Previous</div><div class="pt">${prev.n}. ${esc(prev.title)}</div></a>` : '<span></span>'}
+      ${next ? `<a class="next" href="#/p/${next.id}"><div class="pl">Next</div><div class="pt">${next.n}. ${esc(next.title)}</div></a>` : ''}
+    </div>
+    <p class="kbd-hint"><kbd>←</kbd> <kbd>→</kbd> step through the visualization, <kbd>[</kbd> <kbd>]</kbd> previous / next problem, <kbd>/</kbd> filter problems.</p>
+  `;
+  renderStepper();
+}
+function renderStepper(){
+  const p = BY_ID[stepFor], el = $('#stepper'); if(!el) return;
+  const steps = p.steps.concat([{t: p.post ? 'Final table after the DELETE' : 'Final result', result:true, cols:p.output.cols, rows:p.output.rows,
+    note: p.post ? 'This is the Person table after running the solution — what LeetCode compares.' : `Output of the MySQL solution below, run on the sample data.${p.ordered ? ' Row order matters for this problem.' : ''}`}]);
+  stepIdx = Math.max(0, Math.min(stepIdx, steps.length - 1));
+  const s = steps[stepIdx];
+  el.innerHTML = `
+    <div class="step-tabs" role="tablist">${steps.map((x, i) => `<button class="step-tab ${x.result ? 'result' : ''}" role="tab" data-act="step" data-i="${i}" aria-current="${i === stepIdx ? 'step' : 'false'}" aria-selected="${i === stepIdx}">
+      <span class="sk">${x.result ? '✓' : i + 1}</span><span class="lbl">${esc(x.result ? 'Result' : x.t)}</span></button>`).join('')}</div>
+    <div class="step-title">${s.result ? esc(s.t) : `Step ${stepIdx + 1}: ${esc(s.t)}`}</div>
+    <p class="step-note">${md(s.note)}</p>
+    ${legend(s)}
+    ${grid(s)}
+    ${!s.result && showStepSql ? `<div class="step-sql">${codeBlock(s.sql, 'small')}</div>` : ''}
+    <div class="step-foot">
+      <button class="btn" data-act="step-prev" ${stepIdx === 0 ? 'disabled' : ''}>◀ Previous</button>
+      ${!s.result ? `<button class="btn ghost" data-act="step-sql">${showStepSql ? 'Hide' : 'Show'} the query for this step</button>` : '<span></span>'}
+      <button class="btn ${stepIdx < steps.length - 1 ? 'primary' : ''}" data-act="step-next" ${stepIdx === steps.length - 1 ? 'disabled' : ''}>Next ▶</button>
+    </div>`;
+}
+
+/* ---------- revisit ---------- */
+function renderRevisit(){
+  const ids = Object.keys(S.revisit).map(Number).filter(id => BY_ID[id]);
+  ids.sort((a, b) => (S.revisit[a].reviewed || 0) - (S.revisit[b].reviewed || 0) || BY_ID[a].n - BY_ID[b].n);
+  $('#page').innerHTML = `
+    <h1>Revisit list</h1>
+    <p class="lede">Problems you flagged to come back to. The ones you haven't reviewed for longest are at the top. Mark one reviewed after you re-solve it without looking.</p>
+    ${ids.length ? `<div class="toolbar"><a class="btn primary" href="#/interview/drill/revisit">Drill these as flashcards</a><span class="muted small">${ids.length} problem${ids.length > 1 ? 's' : ''}</span></div>` +
+      ids.map(id => { const p = BY_ID[id], r = S.revisit[id]; return `
+      <div class="rv">
+        <div><a class="rv-title" href="#/p/${id}">${p.n}. ${esc(p.title)}</a>
+          <div class="rv-meta">${esc(SEC[p.sec].name)}, ${p.diff}. Added ${fmtDate(r.added)}. ${r.reviewed ? `Last reviewed ${daysAgo(r.reviewed)} (${r.count || 1}×).` : 'Not reviewed yet.'}</div>
+          <div class="rv-meta" style="margin-top:4px"><span class="recall" style="font-size:.8rem; padding:3px 8px">${md(p.recall)}</span></div></div>
+        <div class="rv-actions"><button class="btn" data-act="reviewed" data-id="${id}">Reviewed today</button><button class="btn ghost" data-act="revisit" data-id="${id}">Remove</button></div>
+        ${S.notes[id] ? `<div class="rv-note">${esc(S.notes[id])}</div>` : ''}
+      </div>`; }).join('')
+    : `<div class="empty-state"><h3>Nothing queued yet</h3><p>Open any problem and press <b>Add to revisit</b>, or tap the star next to it on the roadmap. Flagged problems collect here with your notes.</p><a class="btn" href="#/roadmap">Go to the roadmap</a></div>`}
+  `;
+}
+
+/* ---------- interview ---------- */
+const TABS = [['patterns', 'Patterns'], ['cheatsheet', 'MySQL cheat sheet'], ['concepts', 'Concept questions'], ['drill', 'Problem drill'], ['checklist', 'Checklist and traps']];
+const DR = {pool:'all', order:null, i:0, revealed:false};
+function drillIds(){
+  let list = P;
+  if(DR.pool === 'revisit') list = P.filter(p => S.revisit[p.id]);
+  else if(DR.pool.startsWith('sec:')) list = P.filter(p => p.sec === DR.pool.slice(4));
+  return list.map(p => p.id);
+}
+function resetDrill(shuffle){
+  const ids = drillIds();
+  if(shuffle) for(let i = ids.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+  DR.order = ids; DR.i = 0; DR.revealed = false;
+}
+function renderInterview(tab, arg){
+  if(!TABS.some(t => t[0] === tab)) tab = 'patterns';
+  let body = '';
+  if(tab === 'patterns'){
+    body = `<p class="lede" style="margin-top:20px">Sixteen shapes cover all fifty problems. In an interview, name the pattern first, then write the template.</p>` +
+      R.patterns.map(pt => `<div class="pat"><div><h3>${esc(pt.name)}</h3><p class="when">${md(pt.when)}</p>
+        <div class="chips">${pt.ids.map(id => `<a class="chip" href="#/p/${id}" title="${esc(BY_ID[id].title)}">${BY_ID[id].n}. ${esc(BY_ID[id].title.length > 26 ? BY_ID[id].title.slice(0, 25) + '…' : BY_ID[id].title)}</a>`).join('')}</div></div>
+        <div>${codeBlock(pt.code, 'small')}</div></div>`).join('');
+  } else if(tab === 'cheatsheet'){
+    body = `<p class="lede" style="margin-top:20px">The MySQL functions SQL 50 actually uses, plus the few interviewers ask about next.</p>` +
+      R.cheatsheet.map(g => `<h2 style="margin-top:30px">${esc(g.group)}</h2><table class="cheat"><thead><tr><th>Function</th><th>What it does</th><th>Example</th></tr></thead><tbody>
+        ${g.rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table>`).join('');
+  } else if(tab === 'concepts'){
+    body = `<div class="toolbar"><button class="btn" data-act="qa-all" data-open="1">Expand all</button><button class="btn" data-act="qa-all" data-open="0">Collapse all</button>
+      <span class="muted small">Try answering aloud before opening each one.</span></div>` +
+      R.concepts.map(c => `<details class="qa"><summary>${md(c.q)}</summary><div class="ans">${md(c.a)}</div></details>`).join('');
+  } else if(tab === 'drill'){
+    if(arg === 'revisit' && DR.pool !== 'revisit'){ DR.pool = 'revisit'; DR.order = null; }
+    if(!DR.order) resetDrill(false);
+    const ids = DR.order;
+    const opts = [['all', 'All 50'], ['revisit', `Revisit list (${Object.keys(S.revisit).length})`]].concat(SECS.map(s => ['sec:' + s.key, s.name]));
+    let card;
+    if(!ids.length) card = `<div class="empty-state">${DR.pool === 'revisit' ? 'Your revisit list is empty. Star problems to drill them here.' : 'No problems in this selection.'}</div>`;
+    else {
+      DR.i = Math.min(DR.i, ids.length - 1);
+      const p = BY_ID[ids[DR.i]];
+      card = `<div class="card">
+        <div class="card-top"><span>Card ${DR.i + 1} of ${ids.length}</span><span class="chips"><span class="chip diff ${p.diff}">${p.diff}</span><span class="chip">${esc(SEC[p.sec].name)}</span></span></div>
+        <h3>${p.n}. ${esc(p.title)}</h3>
+        <p>${md(p.prompt)}</p>
+        <p class="returns">Return: <code>${esc(p.returns)}</code></p>
+        ${DR.revealed ? `<div class="reveal">
+            <p class="small muted" style="margin:0">Pattern</p><p><b>${md(p.pattern)}</b></p>
+            <p class="small muted" style="margin:0">Recall line</p><span class="recall">${md(p.recall)}</span>
+            ${codeBlock(p.solution, 'small')}
+            <div class="actions"><a class="btn" href="#/p/${p.id}">Open full page</a>
+              <button class="btn ${S.revisit[p.id] ? 'on-star' : ''}" data-act="revisit" data-id="${p.id}">★ ${S.revisit[p.id] ? 'On revisit list' : 'Add to revisit'}</button></div>
+          </div>` : ''}
+        <div class="drill-nav">
+          <button class="btn" data-act="drill-prev" ${DR.i === 0 ? 'disabled' : ''}>◀ Previous</button>
+          ${DR.revealed ? '' : '<button class="btn primary" data-act="drill-reveal">Reveal answer</button>'}
+          <button class="btn ${DR.revealed ? 'primary' : ''}" data-act="drill-next" ${DR.i === ids.length - 1 ? 'disabled' : ''}>Next ▶</button>
+        </div></div>`;
+    }
+    body = `<div class="toolbar"><label class="small muted" for="pool">Cards from</label>
+      <select class="sel" id="pool">${opts.map(([v, l]) => `<option value="${v}" ${DR.pool === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+      <button class="btn" data-act="drill-shuffle">Shuffle</button><button class="btn ghost" data-act="drill-order">Plan order</button>
+      <span class="muted small">Say the pattern and sketch the query before revealing. <kbd>Space</kbd> reveals, <kbd>→</kbd> next.</span></div>${card}`;
+  } else if(tab === 'checklist'){
+    body = `<h2>How to attack any SQL question</h2><ol class="frame">${R.framework.map(f => `<li><div><b>${esc(f.t)}</b>${md(f.d)}</div></li>`).join('')}</ol>
+      <h2>Logical order of execution</h2><div class="order">${R.exec_order.map((o, i) => `<div><span class="ix">${i + 1}</span><span class="on">${esc(o[0])}</span><span class="muted small">${esc(o[1])}</span></div>`).join('')}</div>
+      <h2>Last-minute traps</h2><ul class="notes traps">${R.traps.map(t => `<li>${md(t)}</li>`).join('')}</ul>`;
+  }
+  $('#page').innerHTML = `<h1>Interview revision</h1>
+    <p class="lede">For the night before: the patterns behind the fifty problems, the functions you need, the theory questions that follow a SQL round, and a flashcard drill.</p>
+    <nav class="tabs" aria-label="Revision sections">${TABS.map(([k, l]) => `<a href="#/interview/${k}" aria-current="${k === tab ? 'page' : 'false'}">${l}</a>`).join('')}</nav>${body}`;
+}
+
+/* ---------- actions ---------- */
+function toggleSolved(id){
+  if(S.solved[id]) delete S.solved[id]; else S.solved[id] = Date.now();
+  save(); toast(S.solved[id] ? 'Marked solved' : 'Marked unsolved');
+}
+function toggleRevisit(id){
+  if(S.revisit[id]) delete S.revisit[id]; else S.revisit[id] = {added: Date.now(), reviewed: null, count: 0};
+  save(); toast(S.revisit[id] ? 'Added to revisit list' : 'Removed from revisit list');
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify({app:'sql50-notebook', version:1, exported:new Date().toISOString(), data:S}, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `sql50-progress-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); toast('Progress file downloaded');
+}
+function importData(file){
+  const fr = new FileReader();
+  fr.onload = () => {
+    try{
+      const j = JSON.parse(fr.result), d = j.data || j;
+      if(typeof d !== 'object' || !d) throw 0;
+      Object.assign(S.solved, d.solved || {});
+      for(const [id, r] of Object.entries(d.revisit || {})){ const cur = S.revisit[id]; if(!cur || (r.reviewed || 0) > (cur.reviewed || 0)) S.revisit[id] = r; }
+      for(const [id, n] of Object.entries(d.notes || {})){ if(n && n.trim()) S.notes[id] = n; }
+      save(); render(); toast('Progress imported and merged');
+    }catch(e){ toast('That file is not a SQL 50 progress export'); }
+  };
+  fr.readAsText(file);
+}
+function applyTheme(){ if(S.theme) document.documentElement.dataset.theme = S.theme; else delete document.documentElement.dataset.theme; }
+function openNav(){ $('#side').classList.add('open'); $('#scrim').classList.add('show'); }
+function closeNav(){ $('#side').classList.remove('open'); $('#scrim').classList.remove('show'); }
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if(!el) return;
+  const act = el.dataset.act, id = +el.dataset.id;
+  switch(act){
+    case 'copy': copyText(CLIP[+el.dataset.clip]); break;
+    case 'solved': toggleSolved(id); render(); break;
+    case 'revisit': toggleRevisit(id); render(); break;
+    case 'reviewed': { const r = S.revisit[id]; r.reviewed = Date.now(); r.count = (r.count || 0) + 1; save(); toast('Marked reviewed today'); render(); break; }
+    case 'step': stepIdx = +el.dataset.i; renderStepper(); break;
+    case 'step-prev': stepIdx--; renderStepper(); break;
+    case 'step-next': stepIdx++; renderStepper(); break;
+    case 'step-sql': showStepSql = !showStepSql; renderStepper(); break;
+    case 'rm-filter': RM[el.dataset.k] = el.dataset.v; render(); break;
+    case 'jump': $('#' + el.dataset.target)?.scrollIntoView({behavior:'smooth', block:'start'}); break;
+    case 'jump-after': e.preventDefault(); location.hash = '#/roadmap'; setTimeout(() => $('#' + el.dataset.target)?.scrollIntoView({block:'start'}), 30); break;
+    case 'theme': S.theme = S.theme === null ? 'light' : S.theme === 'light' ? 'dark' : null; save(); applyTheme(); renderSide(); break;
+    case 'export': exportData(); break;
+    case 'import': $('#importFile').click(); break;
+    case 'qa-all': document.querySelectorAll('details.qa').forEach(d => d.open = el.dataset.open === '1'); break;
+    case 'drill-prev': DR.i--; DR.revealed = false; render(); break;
+    case 'drill-next': DR.i++; DR.revealed = false; render(); break;
+    case 'drill-reveal': DR.revealed = true; render(); break;
+    case 'drill-shuffle': resetDrill(true); render(); toast('Cards shuffled'); break;
+    case 'drill-order': resetDrill(false); render(); break;
+    case 'nav-open': openNav(); break;
+    case 'nav-close': closeNav(); break;
+  }
+});
+document.addEventListener('change', e => {
+  if(e.target.id === 'importFile' && e.target.files[0]){ importData(e.target.files[0]); e.target.value = ''; }
+  if(e.target.id === 'pool'){ DR.pool = e.target.value; resetDrill(false); history.replaceState(null, '', '#/interview/drill'); render(); }
+});
+let noteTimer;
+document.addEventListener('input', e => {
+  if(e.target.id === 'q') applyFilter();
+  if(e.target.id === 'notes'){
+    const id = +e.target.dataset.id, v = e.target.value;
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(() => { if(v.trim()) S.notes[id] = v; else delete S.notes[id]; save(); $('#saved').textContent = v.trim() ? 'Saved in this browser' : ''; }, 400);
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.target.id === 'q' && e.key === 'Enter'){ const a = [...document.querySelectorAll('.tree a')].find(x => x.style.display !== 'none'); if(a){ location.hash = a.getAttribute('href'); e.target.blur(); } return; }
+  if(e.target.id === 'q' && e.key === 'Escape'){ e.target.value = ''; applyFilter(); e.target.blur(); return; }
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.metaKey || e.ctrlKey || e.altKey) return;
+  const r = parseRoute();
+  if(e.key === '/'){ e.preventDefault(); if(innerWidth <= 960) openNav(); $('#q').focus(); return; }
+  if(r.view === 'problem'){
+    const i = P.findIndex(p => p.id === r.id);
+    if(e.key === 'ArrowRight'){ stepIdx++; renderStepper(); }
+    else if(e.key === 'ArrowLeft'){ stepIdx--; renderStepper(); }
+    else if(e.key === ']' && P[i + 1]) location.hash = '#/p/' + P[i + 1].id;
+    else if(e.key === '[' && P[i - 1]) location.hash = '#/p/' + P[i - 1].id;
+  } else if(r.view === 'interview' && r.tab === 'drill' && DR.order && DR.order.length){
+    if(e.key === ' '){ e.preventDefault(); if(!DR.revealed){ DR.revealed = true; render(); } }
+    else if(e.key === 'ArrowRight' && DR.i < DR.order.length - 1){ DR.i++; DR.revealed = false; render(); }
+    else if(e.key === 'ArrowLeft' && DR.i > 0){ DR.i--; DR.revealed = false; render(); }
+  }
+});
+window.addEventListener('hashchange', render);
+window.addEventListener('storage', e => { if(e.key === KEY){ S = loadStore(); render(); } });
+applyTheme();
+render();
+</script>
+</body>
+</html>
